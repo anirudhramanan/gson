@@ -224,7 +224,7 @@ public final class Gson {
     factories.add(ObjectTypeAdapter.FACTORY);
 
     // the excluder must precede all adapters that handle user-defined types
-    factories.add(excluder);
+//    factories.add(excluder);
 
     // users' type adapters
     factories.addAll(factoriesToBeAdded);

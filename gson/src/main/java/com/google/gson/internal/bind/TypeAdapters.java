@@ -405,7 +405,7 @@ public final class TypeAdapters {
       out.value(value);
     }
   };
-  
+
   public static final TypeAdapter<BigDecimal> BIG_DECIMAL = new TypeAdapter<BigDecimal>() {
     @Override public BigDecimal read(JsonReader in) throws IOException {
       if (in.peek() == JsonToken.NULL) {
@@ -423,7 +423,7 @@ public final class TypeAdapters {
       out.value(value);
     }
   };
-  
+
   public static final TypeAdapter<BigInteger> BIG_INTEGER = new TypeAdapter<BigInteger>() {
     @Override public BigInteger read(JsonReader in) throws IOException {
       if (in.peek() == JsonToken.NULL) {
@@ -599,7 +599,8 @@ public final class TypeAdapters {
 
     @Override
     public Calendar read(JsonReader in) throws IOException {
-      if (in.peek() == JsonToken.NULL) {
+      JsonToken peek = in.peek();
+      if (peek == JsonToken.NULL) {
         in.nextNull();
         return  null;
       }
@@ -610,7 +611,8 @@ public final class TypeAdapters {
       int hourOfDay = 0;
       int minute = 0;
       int second = 0;
-      while (in.peek() != JsonToken.END_OBJECT) {
+      peek = in.peek();
+      while (peek != JsonToken.END_OBJECT) {
         String name = in.nextName();
         int value = in.nextInt();
         if (YEAR.equals(name)) {
@@ -696,7 +698,8 @@ public final class TypeAdapters {
 
   public static final TypeAdapter<JsonElement> JSON_ELEMENT = new TypeAdapter<JsonElement>() {
     @Override public JsonElement read(JsonReader in) throws IOException {
-      switch (in.peek()) {
+      JsonToken peek = in.peek();
+      switch (peek) {
       case STRING:
         return new JsonPrimitive(in.nextString());
       case NUMBER:
@@ -770,12 +773,17 @@ public final class TypeAdapters {
       = newTypeHierarchyFactory(JsonElement.class, JSON_ELEMENT);
 
   private static final class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
-    private final Map<String, T> nameToConstant = new HashMap<String, T>();
-    private final Map<T, String> constantToName = new HashMap<T, String>();
+    private final Map<String, T> nameToConstant;
+    private final Map<T, String> constantToName;
 
     public EnumTypeAdapter(Class<T> classOfT) {
       try {
-        for (T constant : classOfT.getEnumConstants()) {
+        T[] enumConstants = classOfT.getEnumConstants();
+        int enumCounts = enumConstants.length;
+        nameToConstant = new HashMap<String, T>(enumCounts);
+        constantToName = new HashMap<T, String>(enumCounts);
+
+        for (T constant : enumConstants) {
           String name = constant.name();
           SerializedName annotation = classOfT.getField(name).getAnnotation(SerializedName.class);
           if (annotation != null) {
